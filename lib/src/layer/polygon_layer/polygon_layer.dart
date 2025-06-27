@@ -6,6 +6,7 @@ import 'package:dart_earcut/dart_earcut.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map/src/fork_utils.dart';
 import 'package:flutter_map/src/layer/shared/feature_layer_utils.dart';
 import 'package:flutter_map/src/layer/shared/layer_interactivity/internal_hit_detectable.dart';
 import 'package:flutter_map/src/layer/shared/layer_projection_simplification/state.dart';
