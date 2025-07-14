@@ -1,7 +1,6 @@
 import 'dart:math';
 import 'dart:ui';
 
-import 'package:collection/collection.dart';
 import 'package:dart_earcut/dart_earcut.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
@@ -16,12 +15,42 @@ import 'package:flutter_map/src/misc/offsets.dart';
 import 'package:flutter_map/src/misc/point_in_polygon.dart';
 import 'package:flutter_map/src/misc/simplify.dart';
 import 'package:latlong2/latlong.dart' hide Path;
-import 'package:polylabel/polylabel.dart';
+import 'package:logger/logger.dart';
 
-part 'label.dart';
+part 'label/build_text_painter.dart';
 part 'painter.dart';
 part 'polygon.dart';
 part 'projected_polygon.dart';
+
+/// The method used by the painter to fill polygons and resolve overlaps &
+/// intersections
+///
+/// Each method has its own advantages and disadvantages.
+enum PolygonPainterFillMethod {
+  /// Uses `PathFillType.evenOdd` with `Path().addPolygon`
+  ///
+  /// This gives the best performance, and works on the web. However, it yields
+  /// unintended results in certain edge cases when polygons intersect when
+  /// [PolygonLayer.invertedFill] is used, or when polygon holes intersect with
+  /// other holes.
+  evenOdd,
+
+  /// Uses `Path.combine`
+  ///
+  /// This always gives the best results on non-web platforms. However, it
+  /// always yields unintended results on the web (due to a Flutter issue), and
+  /// has slightly worse performance.
+  ///
+  /// The hit to performance is unlikely to be significant or even noticable in
+  /// many applications, but applications drawing many polygons may see a slow
+  /// of about 2ms (as tested in the example app's stress test). Profile your
+  /// project to determine whether switching methods is suitable, especially if
+  /// there is no visual difference.
+  ///
+  /// See https://github.com/flutter/flutter/issues/124675 for the Flutter issue
+  /// preventing this method from working on the web.
+  pathCombine,
+}
 
 /// A polygon layer for [FlutterMap].
 @immutable
@@ -67,6 +96,38 @@ base class PolygonLayer<R extends Object>
   /// Defaults to `false`.
   final bool drawLabelsLast;
 
+  /// Whether polygons should only be drawn/projected onto a single world
+  /// instead of potentially being drawn onto adjacent worlds (based on the
+  /// shortest distance)
+  ///
+  /// When set `true` with a CRS which does support
+  /// [Crs.replicatesWorldLongitude], polygons will still be repeated across
+  /// worlds, but each polygon will only be drawn within one world.
+  ///
+  /// Defaults to `false`.
+  final bool drawInSingleWorld;
+
+  /// The method used by the painter to fill polygons and resolve overlaps &
+  /// intersections
+  ///
+  /// See documentation on each value in [PolygonPainterFillMethod] for more
+  /// advantages and disadvantages of each method.
+  ///
+  /// Defaults to [PolygonPainterFillMethod.evenOdd] on web &
+  /// [PolygonPainterFillMethod.pathCombine] otherwise.
+  final PolygonPainterFillMethod painterFillMethod;
+
+  /// Color to apply to the map where not covered by a polygon
+  ///
+  /// > [!WARNING]
+  /// > On the web, inverted filling may not work as expected in some cases.
+  /// > It will not match the behaviour seen on native platforms. Avoid allowing
+  /// > polygons to intersect, and avoid using holes within polygons.
+  /// > This is because [PolygonPainterFillMethod.evenOdd] must be used on the
+  /// > web, which (due to Flutter issues), does not properly support this
+  /// > functionality.
+  final Color? invertedFill;
+
   /// {@macro fm.lhn.layerHitNotifier.usage}
   final LayerHitNotifier<R>? hitNotifier;
 
@@ -79,6 +140,11 @@ base class PolygonLayer<R extends Object>
     this.polygonCulling = true,
     this.polygonLabels = true,
     this.drawLabelsLast = false,
+    this.drawInSingleWorld = false,
+    this.painterFillMethod = kIsWeb
+        ? PolygonPainterFillMethod.evenOdd
+        : PolygonPainterFillMethod.pathCombine,
+    this.invertedFill,
     this.hitNotifier,
     super.simplificationTolerance,
   }) : super();
@@ -92,11 +158,34 @@ class _PolygonLayerState<R extends Object> extends State<PolygonLayer<R>>
         ProjectionSimplificationManagement<_ProjectedPolygon<R>, Polygon<R>,
             PolygonLayer<R>> {
   @override
+  void didUpdateWidget(covariant PolygonLayer<R> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (kDebugMode &&
+        kIsWeb &&
+        oldWidget.invertedFill == null &&
+        widget.invertedFill != null) {
+      Logger(printer: PrettyPrinter(methodCount: 0)).w(
+        '\x1B[1m\x1B[3mflutter_map\x1B[0m\nOn the web, inverted filling may '
+        'not work as expected in some cases. It will not match the behaviour\n'
+        'seen on native platforms.\nAvoid allowing polygons to intersect, and '
+        'avoid using holes within polygons.\nThis is due to multiple '
+        'limitations/bugs within Flutter.\nSee '
+        'https://docs.fleaflet.dev/layers/polyline-layer#culling for more info.',
+      );
+    }
+  }
+
+  @override
   _ProjectedPolygon<R> projectElement({
     required Projection projection,
     required Polygon<R> element,
   }) =>
-      _ProjectedPolygon._fromPolygon(projection, element);
+      _ProjectedPolygon._fromPolygon(
+        projection,
+        element,
+        widget.drawInSingleWorld,
+      );
 
   @override
   _ProjectedPolygon<R> simplifyProjectedElement({
@@ -175,6 +264,8 @@ class _PolygonLayerState<R extends Object> extends State<PolygonLayer<R>>
           camera: camera,
           polygonLabels: widget.polygonLabels,
           drawLabelsLast: widget.drawLabelsLast,
+          painterFillMethod: widget.painterFillMethod,
+          invertedFill: widget.invertedFill,
           debugAltRenderer: widget.debugAltRenderer,
           hitNotifier: widget.hitNotifier,
         ),
