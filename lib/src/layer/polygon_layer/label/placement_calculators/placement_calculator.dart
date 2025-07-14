@@ -1,11 +1,11 @@
 import 'package:collection/collection.dart';
-import 'package:dart_polylabel2/dart_polylabel2.dart' as dart_polylabel2;
+//import 'package:dart_polylabel2/dart_polylabel2.dart' as dart_polylabel2;
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:meta/meta.dart';
 
 part 'centroid.dart';
-part 'polylabel.dart';
+//part 'polylabel.dart';
 part 'simple_centroid.dart';
 
 /// Calculates the position of a [Polygon.label] within its [Polygon] in
@@ -41,8 +41,8 @@ abstract interface class PolygonLabelPlacementCalculator {
       CentroidCalculator._;
 
   /// {@macro fm.polygonLabelPlacementCalculator.polylabel}
-  const factory PolygonLabelPlacementCalculator.polylabel({double precision}) =
-      PolylabelCalculator._;
+  // const factory PolygonLabelPlacementCalculator.polylabel({double precision}) =
+  //     PolylabelCalculator._;
 
   /// Given a polygon (and its points), calculate a single position at which
   /// the center of the label should be placed

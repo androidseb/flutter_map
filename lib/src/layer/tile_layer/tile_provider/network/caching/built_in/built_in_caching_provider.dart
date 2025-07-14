@@ -58,7 +58,7 @@ abstract interface class BuiltInMapCachingProvider
     /// Disabling the size limit may improve write performance.
     ///
     /// Defaults to 1 GB. Set to `null` to disable.
-    int? maxCacheSize = 1_000_000_000,
+    int? maxCacheSize = 1000000000,
 
     /// Function to convert a tile's URL to a key used to uniquely identify the
     /// tile

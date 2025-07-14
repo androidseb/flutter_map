@@ -83,7 +83,7 @@ class Polygon<R extends Object> with HitDetectableElement<R> {
   ///
   /// Defaults to [PolygonLabelPlacementCalculator.centroid]
   /// ([CentroidCalculator]).
-  final PolygonLabelPlacementCalculator labelPlacementCalculator;
+  //final PolygonLabelPlacementCalculator labelPlacementCalculator;
 
   /// Whether to rotate the label counter to the camera's rotation, to ensure
   /// it remains upright
@@ -103,7 +103,7 @@ class Polygon<R extends Object> with HitDetectableElement<R> {
   LatLng? _labelPosition;
 
   /// Get the coordinates of the label position (cached).
-  LatLng get labelPosition => _labelPosition ??= labelPlacementCalculator(this);
+  //LatLng get labelPosition => _labelPosition ??= labelPlacementCalculator(this);
 
   LatLngBounds? _boundingBox;
 
@@ -152,23 +152,23 @@ class Polygon<R extends Object> with HitDetectableElement<R> {
     this.labelPlacement = PolygonLabelPlacement.centroid,
 
     /// See [labelPlacementCalculator]
-    PolygonLabelPlacementCalculator? labelPlacementCalculator,
+    //PolygonLabelPlacementCalculator? labelPlacementCalculator,
     this.rotateLabel = false,
     this.hitValue,
-  })  : _filledAndClockwise = color != null && isClockwise(points),
-        labelPlacementCalculator = labelPlacementCalculator ??
-            switch (labelPlacement) {
-              // ignore: deprecated_member_use_from_same_package
-              PolygonLabelPlacement.centroid =>
-                const PolygonLabelPlacementCalculator.centroid(),
-              // ignore: deprecated_member_use_from_same_package
-              PolygonLabelPlacement.centroidWithMultiWorld =>
-                const PolygonLabelPlacementCalculator
-                    .simpleMultiWorldCentroid(),
-              // ignore: deprecated_member_use_from_same_package
-              PolygonLabelPlacement.polylabel =>
-                const PolygonLabelPlacementCalculator.polylabel(),
-            };
+  })  : _filledAndClockwise = color != null && isClockwise(points);
+        // labelPlacementCalculator = labelPlacementCalculator ??
+        //     switch (labelPlacement) {
+        //       // ignore: deprecated_member_use_from_same_package
+        //       PolygonLabelPlacement.centroid =>
+        //         const PolygonLabelPlacementCalculator.centroid(),
+        //       // ignore: deprecated_member_use_from_same_package
+        //       PolygonLabelPlacement.centroidWithMultiWorld =>
+        //         const PolygonLabelPlacementCalculator
+        //             .simpleMultiWorldCentroid(),
+        //       // ignore: deprecated_member_use_from_same_package
+        //       PolygonLabelPlacement.polylabel =>
+        //         const PolygonLabelPlacementCalculator.polylabel(),
+        //     };
 
   /// Checks if the [Polygon] points are ordered clockwise in the list.
   static bool isClockwise(List<LatLng> points) {
@@ -197,7 +197,7 @@ class Polygon<R extends Object> with HitDetectableElement<R> {
           labelStyle == other.labelStyle &&
           // ignore: deprecated_member_use_from_same_package
           labelPlacement == other.labelPlacement &&
-          labelPlacementCalculator == other.labelPlacementCalculator &&
+          //labelPlacementCalculator == other.labelPlacementCalculator &&
           rotateLabel == other.rotateLabel &&
           hitValue == other.hitValue &&
           // Expensive computations last to take advantage of lazy logic gates
@@ -230,7 +230,7 @@ class Polygon<R extends Object> with HitDetectableElement<R> {
         labelStyle,
         // ignore: deprecated_member_use_from_same_package
         labelPlacement,
-        labelPlacementCalculator,
+        //labelPlacementCalculator,
         rotateLabel,
         renderHashCode,
       ]);

@@ -241,31 +241,31 @@ class _PolygonPainter<R extends Object> extends CustomPainter
     }
 
     /// Draws labels on a "single-world"
-    WorldWorkControl drawLabelIfVisible(
-      double shift,
-      _ProjectedPolygon<R> projectedPolygon,
-    ) {
-      final polygon = projectedPolygon.polygon;
-      final painter = _buildLabelTextPainter(
-        mapSize: camera.size,
-        placementPoint: _helper.getOffset(
-          polygon.labelPosition,
-          shift: shift,
-        ),
-        bounds: _getBounds(camera.pixelOrigin, polygon),
-        textPainter: polygon.textPainter!,
-        rotationRad: camera.rotationRad,
-        rotate: polygon.rotateLabel,
-        padding: 20,
-      );
-      if (painter == null) return WorldWorkControl.invisible;
+    // WorldWorkControl drawLabelIfVisible(
+    //   double shift,
+    //   _ProjectedPolygon<R> projectedPolygon,
+    // ) {
+    //   final polygon = projectedPolygon.polygon;
+    //   final painter = _buildLabelTextPainter(
+    //     mapSize: camera.size,
+    //     placementPoint: _helper.getOffset(
+    //       polygon.labelPosition,
+    //       shift: shift,
+    //     ),
+    //     bounds: _getBounds(camera.pixelOrigin, polygon),
+    //     textPainter: polygon.textPainter!,
+    //     rotationRad: camera.rotationRad,
+    //     rotate: polygon.rotateLabel,
+    //     padding: 20,
+    //   );
+    //   if (painter == null) return WorldWorkControl.invisible;
 
-      // Flush the batch before painting to preserve stacking.
-      drawPaths();
+    //   // Flush the batch before painting to preserve stacking.
+    //   drawPaths();
 
-      painter(canvas);
-      return WorldWorkControl.visible;
-    }
+    //   painter(canvas);
+    //   return WorldWorkControl.visible;
+    // }
 
     void invertFillPolygonHole(List<Offset> offsets) {
       // For debugging purposes, should be compiled out
@@ -464,36 +464,36 @@ class _PolygonPainter<R extends Object> extends CustomPainter
 
       workAcrossWorlds(drawIfVisible);
 
-      if (!drawLabelsLast && polygonLabels && polygon.textPainter != null) {
-        // Labels are expensive because:
-        //  * they themselves cannot easily be pulled into our batched path
-        //    painting with the given text APIs
-        //  * therefore, they require us to flush the batch of polygon draws to
-        //    ensure polygons and labels are stacked correctly, i.e.:
-        //    p1, p1_label, p2, p2_label, ... .
+      // if (!drawLabelsLast && polygonLabels && polygon.textPainter != null) {
+      //   // Labels are expensive because:
+      //   //  * they themselves cannot easily be pulled into our batched path
+      //   //    painting with the given text APIs
+      //   //  * therefore, they require us to flush the batch of polygon draws to
+      //   //    ensure polygons and labels are stacked correctly, i.e.:
+      //   //    p1, p1_label, p2, p2_label, ... .
 
-        // The painter will be null if the layOuting algorithm determined that
-        // there isn't enough space.
-        workAcrossWorlds(
-          (double shift) => drawLabelIfVisible(shift, projectedPolygon),
-        );
-      }
+      //   // The painter will be null if the layOuting algorithm determined that
+      //   // there isn't enough space.
+      //   workAcrossWorlds(
+      //     (double shift) => drawLabelIfVisible(shift, projectedPolygon),
+      //   );
+      // }
       drawPaths();
     }
 
-    if (polygonLabels && drawLabelsLast) {
-      for (final projectedPolygon in polygons) {
-        if (projectedPolygon.points.isEmpty) {
-          continue;
-        }
-        if (projectedPolygon.polygon.textPainter == null) {
-          continue;
-        }
-        workAcrossWorlds(
-          (double shift) => drawLabelIfVisible(shift, projectedPolygon),
-        );
-      }
-    }
+    // if (polygonLabels && drawLabelsLast) {
+    //   for (final projectedPolygon in polygons) {
+    //     if (projectedPolygon.points.isEmpty) {
+    //       continue;
+    //     }
+    //     if (projectedPolygon.polygon.textPainter == null) {
+    //       continue;
+    //     }
+    //     workAcrossWorlds(
+    //       (double shift) => drawLabelIfVisible(shift, projectedPolygon),
+    //     );
+    //   }
+    // }
   }
 
   Paint? _getBorderPaint(Polygon polygon) {
